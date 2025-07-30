@@ -1,0 +1,10 @@
+{
+  "packageName": "dev.aryapreetam",
+  "projectName": "aryapreetam",
+  "description": "Powered by Kobweb",
+  "version": "1.0-SNAPSHOT",
+  "group": "dev.aryapreetam",
+  "baseUrl": "http://localhost:8080",
+  "environment": "DEV",
+  "layout": "FULLSTACK"
+}
