@@ -9,60 +9,46 @@ layout: "dev.aryapreetam.components.layouts.MarkdownLayout"
 
 # Building Components with Silk
 
-In this post, we'll explore how to create reusable UI components using **Silk**, Kobweb's built-in UI framework.
+Welcome to the second post in our Kobweb series! Today we'll explore Silk, Kobweb's powerful UI framework.
 
 ## What is Silk?
 
-Silk is Kobweb's answer to component libraries like Material-UI or Chakra UI. It provides:
+Silk is Kobweb's component library that provides:
 
-- Pre-built components
+- Pre-built UI components
 - Theming support
 - Responsive design utilities
-- Accessibility features
+- CSS-in-Kotlin styling
 
-## Creating a Custom Button
+## Creating Your First Component
 
-Here's how you can create a custom button component:
+Components in Silk are composable functions that render UI elements. They follow a declarative pattern that's easy to
+understand and maintain.
 
-```kotlin
-@Composable
-fun CustomButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    variant: ButtonVariant? = null
-) {
-    Button(
-        onClick = { onClick() },
-        modifier = ButtonStyle.toModifier(variant).then(modifier)
-    ) {
-        Text(text)
-    }
-}
-```
+## Styling with Silk
 
-## Styling with CSS
+Silk provides several ways to style your components:
 
-You can create custom styles using Kobweb's CSS-in-Kotlin approach:
+1. **Built-in modifiers** - Common styling patterns
+2. **Custom styles** - Your own CSS rules
+3. **Theme integration** - Consistent design system
+4. **Responsive utilities** - Mobile-first design
 
-```kotlin
-val ButtonStyle = CssStyle {
-    base {
-        Modifier
-            .padding(12.px)
-            .borderRadius(8.px)
-            .backgroundColor(Colors.Blue)
-            .color(Colors.White)
-    }
-    
-    hover {
-        Modifier.backgroundColor(Colors.DarkBlue)
-    }
-}
-```
+## Component Composition
+
+One of Silk's strengths is component composition. You can combine simple components to create complex UI patterns.
+
+## Best Practices
+
+When building with Silk:
+
+- Keep components focused and reusable
+- Use the theming system consistently
+- Leverage built-in responsive utilities
+- Test your components across different screen sizes
 
 ## Next Steps
 
-In the next post, we'll explore how to handle routing and navigation in Kobweb applications.
+In the next post, we'll dive deeper into advanced Silk patterns and explore how to build a complete page layout.
 
 Stay tuned!

@@ -9,33 +9,27 @@ layout: "dev.aryapreetam.components.layouts.MarkdownLayout"
 
 # Welcome to My Blog
 
-This is my first blog post! I'm excited to share my journey with **Kotlin** and **Kobweb**.
+This is my first blog post! I'm excited to share my experiences with **Kobweb** and modern web development.
 
 ## What is Kobweb?
 
-Kobweb is a modern framework for building full-stack web applications using Kotlin and Compose HTML. It allows
-developers to write both frontend and backend code in Kotlin.
-
-### Key Features
-
-- **Type Safety**: Everything is type-safe
-- **Hot Reloading**: Fast development cycle
-- **Kotlin Multiplatform**: Share code between frontend and backend
+Kobweb is a modern web framework built on Kotlin Multiplatform. It makes web development fun and easy.
 
 ## Getting Started
 
-To get started with Kobweb, you can:
+You can start your Kobweb project easily:
 
-1. Install the Kobweb CLI
-2. Create a new project
-3. Start developing!
+- Install Kotlin
+- Set up your project
+- Start coding
 
-```kotlin
-@Page
-@Composable
-fun HomePage() {
-    Text("Hello, Kobweb!")
-}
-```
+## What's Next?
 
-That's it for now. More posts coming soon!
+I'm looking forward to sharing more about:
+
+- Building reactive UIs with Compose
+- State management in Kobweb
+- Working with APIs and databases
+- Deploying to production
+
+Stay tuned for more posts!

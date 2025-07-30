@@ -5,9 +5,19 @@ import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.layout.Layout
+import com.varabyte.kobweb.silk.init.InitSilk
+import com.varabyte.kobweb.silk.init.InitSilkContext
+import com.varabyte.kobweb.silk.init.registerStyleBase
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import kotlinx.browser.document
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+
+@InitSilk
+fun initHighlightJs(ctx: InitSilkContext) {
+  // Tweaks to make output from highlight.js look softer / better
+  ctx.stylesheet.registerStyleBase("code.hljs") { Modifier.borderRadius(8.px) }
+}
 
 /**
  * Layout specifically for markdown pages
@@ -18,6 +28,25 @@ import org.jetbrains.compose.web.dom.*
 fun MarkdownLayout(content: @Composable () -> Unit) {
   var colorMode by ColorMode.currentState
 
+  // Load appropriate CSS for syntax highlighting based on theme
+  LaunchedEffect(colorMode) {
+    var styleElement = document.querySelector("""link[title="hljs-style"]""")
+    if (styleElement == null) {
+      styleElement = document.createElement("link").apply {
+        setAttribute("type", "text/css")
+        setAttribute("rel", "stylesheet")
+        setAttribute("title", "hljs-style")
+      }.also { document.head!!.appendChild(it) }
+    }
+    styleElement.setAttribute("href", "/highlight.js/styles/a11y-${colorMode.name.lowercase()}.min.css")
+  }
+
+  // Trigger syntax highlighting when content changes
+  LaunchedEffect(content) {
+    // Initialize highlight.js
+    js("hljs.highlightAll()")
+  }
+
   PageLayout {
     // Container for markdown content with proper styling
     Box(
@@ -27,18 +56,17 @@ fun MarkdownLayout(content: @Composable () -> Unit) {
         .margin(0.px)
         .alignSelf(AlignSelf.Center)
     ) {
-      // Add markdown-specific styles
+      // Add markdown-specific styles with JetBrains Mono font
       Style {
         val textColor = if (colorMode.isLight) "#2d3748" else "#e2e8f0"
         val headingColor = if (colorMode.isLight) "#1a202c" else "#f7fafc"
         val linkColor = if (colorMode.isLight) "#3182ce" else "#63b3ed"
         val codeBackground = if (colorMode.isLight) "#f7fafc" else "#2d3748"
         val codeTextColor = if (colorMode.isLight) "#e53e3e" else "#fc8181"
-        val preBackground = if (colorMode.isLight) "#f7fafc" else "#2d3748"
         val borderColor = if (colorMode.isLight) "#e2e8f0" else "#4a5568"
         val blockquoteBackground = if (colorMode.isLight) "#f8fafc" else "#374151"
 
-        // Global markdown styles with consistent system font
+        // Global markdown styles with JetBrains Mono for code
         """
           .markdown-content {
               line-height: 1.6;
@@ -87,40 +115,25 @@ fun MarkdownLayout(content: @Composable () -> Unit) {
               color: $codeTextColor;
               padding: 0.125rem 0.25rem;
               border-radius: 0.25rem;
-              font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+              font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
               font-size: 0.875em;
               font-weight: 500;
           }
           
           .markdown-content pre {
-              background-color: ${if (colorMode.isLight) "#1a202c" else "#2d3748"};
-              color: ${if (colorMode.isLight) "#e2e8f0" else "#e2e8f0"};
-              border: 1px solid ${if (colorMode.isLight) "#2d3748" else "#4a5568"};
-              border-radius: 0.5rem;
-              padding: 1rem;
               margin: 1.5rem 0;
               overflow-x: auto;
               line-height: 1.5;
-              position: relative;
-          }
-          
-          .markdown-content pre::before {
-              content: "$ ";
-              color: ${if (colorMode.isLight) "#68d391" else "#68d391"};
-              font-weight: bold;
-              position: absolute;
-              left: 1rem;
-              top: 1rem;
+              border-radius: 8px;
           }
           
           .markdown-content pre code {
               background: none;
               color: inherit;
-              padding: 0;
-              padding-left: 1.5rem;
+              padding: 1rem;
               font-size: 0.875rem;
               font-weight: 400;
-              font-family: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+              font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
               display: block;
           }
           

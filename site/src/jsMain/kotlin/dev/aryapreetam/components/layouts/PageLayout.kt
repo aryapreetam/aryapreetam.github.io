@@ -10,6 +10,7 @@ import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.icons.fa.FaMoon
 import com.varabyte.kobweb.silk.components.icons.fa.FaSun
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -21,6 +22,17 @@ import org.jetbrains.compose.web.dom.*
 @Composable
 fun PageLayout(content: @Composable () -> Unit) {
   var colorMode by ColorMode.currentState
+
+  // Load JetBrains Mono font if not already loaded
+  LaunchedEffect(Unit) {
+    if (document.querySelector("link[href*='jetbrains-mono']") == null) {
+      val linkElement = document.createElement("link").apply {
+        setAttribute("rel", "stylesheet")
+        setAttribute("href", "https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/jetbrains-mono.min.css")
+      }
+      document.head?.appendChild(linkElement)
+    }
+  }
 
   // Load theme from localStorage on first render
   LaunchedEffect(Unit) {
