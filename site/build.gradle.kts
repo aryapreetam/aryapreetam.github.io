@@ -2,6 +2,7 @@ import com.varabyte.kobweb.gradle.application.util.configAsKobwebApplication
 import com.varabyte.kobwebx.gradle.markdown.handlers.MarkdownHandlers
 import com.varabyte.kobwebx.gradle.markdown.ext.kobwebcall.KobwebCall
 import kotlinx.html.script
+import kotlinx.html.link
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -38,22 +39,14 @@ kobweb {
         index {
             description.set("Powered by Kobweb")
           head.add {
+            // Prism.js for syntax highlighting (more reliable than highlight.js)
             script {
-              // Needed for syntax highlighting
-              src = "/highlight.js/highlight.min.js"
+              src = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"
             }
             script {
-              // Python language support
-              src = "/highlight.js/python.min.js"
+              src = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"
             }
-            script {
-              // JSON language support  
-              src = "/highlight.js/json.min.js"
-            }
-            script {
-              // Kotlin language support (for .kts files)
-              src = "/highlight.js/kotlin.min.js"
-            }
+            // Note: Theme will be loaded dynamically based on color mode in CodeBlock component
           }
         }
     }

@@ -16,11 +16,10 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 
-// JavaScript interop for highlight.js
-external object hljs {
+// JavaScript interop for Prism.js
+external object Prism {
   fun highlightElement(element: HTMLElement)
-  fun configure(options: dynamic)
-  fun registerLanguage(name: String, definition: dynamic)
+  fun highlightAll()
 }
 
 @Composable
@@ -34,7 +33,7 @@ fun CodeBlock(
   var colorMode by ColorMode.currentState
   var isHovered by remember { mutableStateOf(false) }
 
-  // Load JetBrains Mono font and highlight.js themes
+  // Load JetBrains Mono font
   LaunchedEffect(Unit) {
     // Load JetBrains Mono font with higher priority
     if (document.querySelector("link[href*='JetBrains+Mono']") == null) {
@@ -55,27 +54,13 @@ fun CodeBlock(
       document.head?.appendChild(styleLink)
     }
 
-    // Load highlight.js theme based on color mode
-    val themeId = "highlight-theme"
-    document.getElementById(themeId)?.remove()
-
-    val themeLink = document.createElement("link").apply {
-      setAttribute("id", themeId)
-      setAttribute("rel", "stylesheet")
-      setAttribute(
-        "href",
-        if (colorMode.isLight) "/highlight.js/styles/a11y-light.min.css" else "/highlight.js/styles/a11y-dark.min.css"
-      )
-    }
-    document.head?.appendChild(themeLink)
-
     // Add custom CSS to force JetBrains Mono
     val customStyleId = "jetbrains-mono-force"
     if (document.getElementById(customStyleId) == null) {
       val style = document.createElement("style").apply {
         setAttribute("id", customStyleId)
         textContent = """
-          pre code, code, .hljs {
+          pre code, code, .token {
             font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
             font-feature-settings: 'liga' 0;
           }
@@ -85,18 +70,38 @@ fun CodeBlock(
     }
   }
 
+  // Load Prism.js theme based on color mode
+  LaunchedEffect(colorMode) {
+    // Remove existing Prism theme
+    val existingTheme = document.getElementById("prism-theme")
+    existingTheme?.remove()
+
+    // Load appropriate theme based on color mode
+    val themeLink = document.createElement("link").apply {
+      setAttribute("id", "prism-theme")
+      setAttribute("rel", "stylesheet")
+      setAttribute(
+        "href",
+        if (colorMode.isLight) {
+          "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css"
+        } else {
+          "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css"
+        }
+      )
+    }
+    document.head?.appendChild(themeLink)
+  }
+
   // Apply syntax highlighting when the component mounts or updates
-  LaunchedEffect(text, lang, colorMode) {
+  LaunchedEffect(text, lang) {
     window.setTimeout({
       codeRef.value?.let { element ->
         try {
-          if (js("typeof hljs !== 'undefined'") as Boolean) {
-            // Configure highlight.js with better language detection
-            hljs.configure(js("{ ignoreUnescapedHTML: true, languages: ['kotlin', 'json', 'python', 'javascript', 'bash', 'yaml', 'xml', 'gradle'] }"))
-            hljs.highlightElement(element)
+          if (js("typeof Prism !== 'undefined'") as Boolean) {
+            Prism.highlightElement(element)
           }
         } catch (e: Exception) {
-          console.log("Highlight.js error:", e)
+          console.log("Prism.js error:", e)
         }
       }
     }, 100)
@@ -105,10 +110,20 @@ fun CodeBlock(
   fun copyToClipboard() {
     try {
       js("navigator.clipboard.writeText(text)")
-      console.log("Code copied to clipboard")
     } catch (e: Exception) {
       console.log("Failed to copy:", e)
     }
+  }
+
+  // Map language aliases for Prism.js
+  val prismLang = when (lang?.lowercase()) {
+    "kt", "kts", "kotlin" -> "kotlin"
+    "gradle", "gradle.kts", "build.gradle.kts" -> "kotlin"
+    "js" -> "javascript"
+    "py" -> "python"
+    "yml" -> "yaml"
+    "sh" -> "bash"
+    else -> lang
   }
 
   // Container with relative positioning for copy button
@@ -126,7 +141,7 @@ fun CodeBlock(
       onMouseLeave { isHovered = false }
     }
   ) {
-    // Header with filename and copy button (always show copy button)
+    // Header with filename and copy button
     Div(
       attrs = {
         style {
@@ -147,7 +162,7 @@ fun CodeBlock(
         Text(filename ?: lang?.let { it.uppercase() } ?: "CODE")
       }
 
-      // Copy button (always visible on hover)
+      // Copy button
       Button(
         attrs = {
           style {
@@ -187,33 +202,25 @@ fun CodeBlock(
         }
       }
     ) {
-      Code(attrs = {
-        // Map language aliases
-        val hlLang = when (lang?.lowercase()) {
-          "kt", "kts", "kotlin" -> "kotlin"
-          "gradle", "gradle.kts", "build.gradle.kts" -> "kotlin"
-          "js" -> "javascript"
-          "py" -> "python"
-          "yml" -> "yaml"
-          else -> lang
+      Code(
+        attrs = {
+          classes(prismLang?.let { "language-$it" } ?: "nohighlight")
+          style {
+            fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important")
+            fontSize(14.px)
+            property("line-height", "1.5")
+            whiteSpace("pre")
+            display(DisplayStyle.Block)
+            backgroundColor(Color.transparent)
+            color(Color("inherit"))
+            fontWeight(400)
+          }
+          ref { element ->
+            codeRef.value = element
+            onDispose { codeRef.value = null }
+          }
         }
-        classes(hlLang?.let { "language-$it" } ?: "nohighlight")
-
-        style {
-          fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important")
-          fontSize(14.px)
-          property("line-height", "1.5")
-          whiteSpace("pre")
-          display(DisplayStyle.Block)
-          backgroundColor(Color.transparent)
-          color(Color("inherit"))
-          fontWeight(400)
-        }
-        ref { element ->
-          codeRef.value = element
-          onDispose { codeRef.value = null }
-        }
-      }) {
+      ) {
         Text(text)
       }
     }
