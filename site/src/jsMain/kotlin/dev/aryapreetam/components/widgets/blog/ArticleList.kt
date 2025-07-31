@@ -10,6 +10,23 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import dev.aryapreetam.pages.blog.ArticleEntry
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import kotlin.js.Date
+
+private fun formatDate(dateString: String): String {
+  return try {
+    val date = Date(dateString)
+    val months = arrayOf(
+      "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    )
+    val month = months[date.getMonth()]
+    val day = date.getDate()
+    val year = date.getFullYear()
+    "$month $day, $year"
+  } catch (e: Exception) {
+    dateString // Fallback to original string if parsing fails
+  }
+}
 
 @Composable
 fun ArticleList(entries: List<ArticleEntry>) {
@@ -50,7 +67,7 @@ private fun ArticleSummary(entry: ArticleEntry) {
   Article(
     attrs = {
       style {
-        padding(24.px)
+        padding(16.px)
         border(
           1.px,
           LineStyle.Solid,
@@ -96,7 +113,7 @@ private fun ArticleSummary(entry: ArticleEntry) {
         }
       }
     ) {
-      Span { Text(entry.date) }
+      Span { Text(formatDate(entry.date)) }
       Span { Text("•") }
       Span { Text(entry.author) }
     }

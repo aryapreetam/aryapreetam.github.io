@@ -55,7 +55,7 @@ fun HomePage() {
                     }
                 }
             ) {
-                Text("Software Engineer focused on cross-platform app development using Compose/Kotlin Multiplatform. Passionate about high-leverage engineering—simplifying both developer and end-user experience with minimal effort.")
+                Text("I'm Preetam — a Software Engineer focused on cross-platform app development using Compose/Kotlin Multiplatform. Passionate about high-leverage engineering—simplifying both developer and end-user experience with minimal effort.")
             }
 
             P(

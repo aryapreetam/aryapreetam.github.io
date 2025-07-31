@@ -58,6 +58,20 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
     Modifier.margin(0.px, 0.px, 4.px, 0.px)
   }
 
+  // Style horizontal rules to be clean without extra padding
+  ctx.stylesheet.registerStyleBase("hr") {
+    Modifier
+      .margin(24.px, 0.px)
+      .padding(0.px)
+      .border(0.px)
+      .height(1.px)
+      .width(100.percent)
+      .backgroundColor(Color.currentColor)
+      .opacity(0.3)
+      .display(DisplayStyle.Block)
+      .outline(0.px)
+  }
+
   // Style code blocks to use JetBrains Mono font with better styling
   ctx.stylesheet.registerStyleBase("code") {
     Modifier.fontFamily(
