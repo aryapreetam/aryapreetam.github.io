@@ -9,6 +9,7 @@ import com.varabyte.kobweb.core.layout.Layout
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import dev.aryapreetam.components.layouts.PageLayout
 import dev.aryapreetam.components.widgets.blog.ArticleList
+import dev.aryapreetam.components.widgets.SocialIcons
 import dev.aryapreetam.pages.blog.GeneratedBlogData
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -49,12 +50,12 @@ fun HomePage() {
                     style {
                         fontSize(16.px)
                         lineHeight("1.6")
+                        marginBottom(8.px)
                         color(if (colorMode.isLight) Color("#4a5568") else Color("#cbd5e0"))
-                        marginBottom(12.px)
                     }
                 }
             ) {
-                Text("I am a Software Engineer specializing in cross-platform apps development primarily with Compose/Kotlin Multiplatform.")
+                Text("Software Engineer focused on cross-platform app development using Compose/Kotlin Multiplatform. Passionate about high-leverage engineering—simplifying both developer and end-user experience with minimal effort.")
             }
 
             P(
@@ -67,7 +68,7 @@ fun HomePage() {
                     }
                 }
             ) {
-                Text("I like to do high impact work with minimal efforts. Constantly in quest for technologies that simplify dev and end user experience.")
+                Text("\uD83D\uDE80 I’m currently open to impactful opportunities—ready to bring immense value through high-leverage engineering")
             }
 
             P(
@@ -79,19 +80,10 @@ fun HomePage() {
                     }
                 }
             ) {
-                Text("Contact me: ")
-                A(
-                    href = "mailto:preetb123@gmail.com",
-                    attrs = {
-                        style {
-                            color(if (colorMode.isLight) Color("#3182ce") else Color("#63b3ed"))
-                            textDecoration("underline")
-                        }
-                    }
-                ) {
-                    Text("preetb123@gmail.com")
-                }
+                Text("Connect with me:")
             }
+
+            SocialIcons()
         }
 
         // Posts section
@@ -102,7 +94,7 @@ fun HomePage() {
                         fontSize(24.px)
                         fontWeight(700)
                         color(if (colorMode.isLight) Color("#1a202c") else Color("#f7fafc"))
-                        marginBottom(24.px)
+                        marginTop(16.px)
                     }
                 }
             ) {

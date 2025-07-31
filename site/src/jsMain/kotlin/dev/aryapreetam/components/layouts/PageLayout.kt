@@ -163,14 +163,30 @@ fun PageLayout(content: @Composable () -> Unit) {
             attrs = {
               style {
                 property("text-align", "center")
-                padding(20.px)
+                paddingTop(16.px)
+                paddingLeft(16.px)
+                paddingRight(16.px)
+                paddingBottom(8.px)
                 fontSize(14.px)
                 color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
                 flexShrink(0)
               }
             }
         ) {
-            Text("Built with Kobweb")
+        Text("Built with ")
+        A(
+          href = "https://kobweb.varabyte.com",
+          attrs = {
+            attr("target", "_blank")
+            attr("rel", "noopener noreferrer")
+            style {
+              color(if (colorMode.isLight) Color("#3182ce") else Color("#63b3ed"))
+              textDecoration("none")
+            }
+          }
+        ) {
+          Text("Kobweb")
+        }
         }
     }
 }
