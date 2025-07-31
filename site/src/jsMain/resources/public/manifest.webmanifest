@@ -1,0 +1,35 @@
+{
+  "name": "Preetam's Blog - Software Engineering & Kotlin Multiplatform",
+  "short_name": "Preetam's Blog",
+  "description": "Software Engineer focused on cross-platform app development. High-leverage engineering insights and Kotlin Multiplatform tutorials.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1a202c",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "categories": ["education", "technology", "developer"],
+  "lang": "en-US",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .light { fill: #2d3748; }
+      .dark { fill: #f7fafc; }
+      @media (prefers-color-scheme: dark) {
+        .light { fill: #f7fafc; }
+        .dark { fill: #2d3748; }
+      }
+    </style>
+  </defs>
+  <rect width="32" height="32" rx="6" class="dark"/>
+  <text x="16" y="22" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" class="light">P</text>
+</svg>
