@@ -34,6 +34,8 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
       .margin(16.px, 0.px)
       .borderRadius(8.px)
       .overflow(Overflow.Auto)
+      .fontSize(14.px)
+      .lineHeight(1.5)
   }
 
   ctx.stylesheet.registerStyleBase("h1, h2, h3, h4, h5, h6") {
@@ -56,11 +58,13 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
     Modifier.margin(0.px, 0.px, 4.px, 0.px)
   }
 
-  // Style code blocks to use JetBrains Mono font
+  // Style code blocks to use JetBrains Mono font with better styling
   ctx.stylesheet.registerStyleBase("code") {
     Modifier.fontFamily(
       "'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace"
     )
+      .fontSize(14.px)
+      .fontWeight(500)
   }
 
   ctx.stylesheet.registerStyleBase("pre code") {
@@ -70,6 +74,16 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
       )
       .fontSize(14.px)
       .lineHeight(1.5)
+      .fontWeight(400)
+  }
+
+  // Ensure JSON syntax highlighting works
+  ctx.stylesheet.registerStyleBase("code.language-json, pre code.language-json") {
+    Modifier
+      .fontFamily(
+        "'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace"
+      )
+      .fontSize(14.px)
   }
 }
 

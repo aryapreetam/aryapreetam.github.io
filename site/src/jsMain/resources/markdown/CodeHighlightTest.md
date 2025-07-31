@@ -152,7 +152,7 @@ Here are some examples of `inline code` that should be styled with JetBrains Mon
 
 ## JSON Data
 
-```json
+```json:package.json
 {
   "name": "My Blog",
   "version": "1.0.0",
@@ -170,5 +170,31 @@ Here are some examples of `inline code` that should be styled with JetBrains Mon
     "build": "./gradlew kobwebExport"
   },
   "keywords": ["kotlin", "kobweb", "blog", "web"]
+}
+```
+
+## Build Configuration
+
+```kotlin:build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kobweb.application)
+    alias(libs.plugins.kobwebx.markdown)
+}
+
+kotlin {
+    js(IR) {
+        browser()
+        binaries.executable()
+    }
+    
+    sourceSets {
+        val jsMain by getting {
+            dependencies {
+                implementation(libs.kobweb.core)
+                implementation(libs.kobweb.silk)
+            }
+        }
+    }
 }
 ```

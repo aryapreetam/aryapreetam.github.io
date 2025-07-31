@@ -19,6 +19,20 @@ fun String.escapeTripleQuotedText(): String {
   return this.replace("\"\"\"", "\\\"\\\"\\\"")
 }
 
+// Blog entry data class for build-time processing
+data class BlogEntry(
+  val route: String,
+  val author: String,
+  val date: String,
+  val title: String,
+  val desc: String,
+  val tags: List<String>
+) {
+  private fun String.escapeQuotes() = this.replace("\"", "\\\"")
+  fun toArticleEntry() =
+    """ArticleEntry("$route", "$author", "$date", "${title.escapeQuotes()}", "${desc.escapeQuotes()}", tags = listOf(${tags.joinToString { "\"$it\"" }}))"""
+}
+
 kobweb {
     app {
         index {
@@ -28,7 +42,19 @@ kobweb {
               // Needed for syntax highlighting
               src = "/highlight.js/highlight.min.js"
             }
+            script {
+              // Python language support
+              src = "/highlight.js/python.min.js"
             }
+            script {
+              // JSON language support  
+              src = "/highlight.js/json.min.js"
+            }
+            script {
+              // Kotlin language support (for .kts files)
+              src = "/highlight.js/kotlin.min.js"
+            }
+          }
         }
     }
 
@@ -37,14 +63,64 @@ kobweb {
       val AR_WGT = "dev.aryapreetam.components.widgets"
 
       code.set { code ->
-        "$AR_WGT.code.CodeBlock(\"\"\"${code.literal.escapeTripleQuotedText()}\"\"\", lang = ${
-          code.info.takeIf { it.isNotBlank() }?.let { "\"$it\"" }
-        })"
+        val info = code.info.takeIf { it.isNotBlank() } ?: ""
+        val (lang, filename) = if (info.contains(":")) {
+          val parts = info.split(":", limit = 2)
+          parts[0] to parts[1]
+        } else {
+          info to null
+        }
+
+        val langParam = if (lang.isNotBlank()) "\"$lang\"" else "null"
+        val filenameParam = if (filename?.isNotBlank() == true) "\"$filename\"" else "null"
+
+        "$AR_WGT.code.CodeBlock(\"\"\"${code.literal.escapeTripleQuotedText()}\"\"\", lang = $langParam, filename = $filenameParam)"
       }
 
       inlineCode.set { code ->
         "$AR_WGT.code.InlineCode(\"\"\"${code.literal.escapeTripleQuotedText()}\"\"\")"
       }
+    }
+
+    // Enable automatic blog data generation
+    process.set { markdownEntries ->
+      val requiredFields = listOf("title", "description", "date")
+      val blogEntries = markdownEntries.mapNotNull { markdownEntry ->
+        val fm = markdownEntry.frontMatter
+        val (title, desc, date) = requiredFields
+          .map { key -> fm[key]?.singleOrNull() }
+          .takeIf { values -> values.all { it != null } }
+          ?.requireNoNulls()
+          ?: return@mapNotNull null
+
+        val author = fm["author"]?.singleOrNull() ?: "Arya Preetam"
+        val tags = fm["tags"] ?: emptyList()
+        BlogEntry(markdownEntry.route, author, date, title, desc, tags)
+      }
+
+      // Generate the blog data file
+      val blogPackage = "dev.aryapreetam.pages.blog"
+      val blogPath = "${blogPackage.replace('.', '/')}/GeneratedBlogData.kt"
+      
+      generateKotlin(blogPath, """
+// This file is generated. Modify the build script if you need to change it.
+package $blogPackage
+
+data class ArticleEntry(
+    val path: String, 
+    val author: String, 
+    val date: String, 
+    val title: String, 
+    val desc: String,
+    val tags: List<String> = emptyList()
+)
+
+object GeneratedBlogData {
+    val entries = listOf(
+        ${blogEntries.sortedByDescending { it.date }.joinToString(",\n        ") { it.toArticleEntry() }}
+    )
+}
+""".trimIndent())
     }
   }
 }

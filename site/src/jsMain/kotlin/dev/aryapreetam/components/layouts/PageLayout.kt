@@ -25,12 +25,51 @@ fun PageLayout(content: @Composable () -> Unit) {
 
   // Load JetBrains Mono font if not already loaded
   LaunchedEffect(Unit) {
-    if (document.querySelector("link[href*='jetbrains-mono']") == null) {
+    // Load JetBrains Mono font with preload for performance
+    if (document.querySelector("link[href*='JetBrains+Mono']") == null) {
+      val preloadLink = document.createElement("link").apply {
+        setAttribute("rel", "preload")
+        setAttribute("as", "font")
+        setAttribute("type", "font/woff2")
+        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+        setAttribute("crossorigin", "")
+      }
+      document.head?.appendChild(preloadLink)
+
       val linkElement = document.createElement("link").apply {
+        setAttribute("rel", "stylesheet")
+        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
+      }
+      document.head?.appendChild(linkElement)
+    }
+
+    // Also load from CDN as backup
+    if (document.querySelector("link[href*='jetbrains-mono']") == null) {
+      val backupLink = document.createElement("link").apply {
         setAttribute("rel", "stylesheet")
         setAttribute("href", "https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/jetbrains-mono.min.css")
       }
-      document.head?.appendChild(linkElement)
+      document.head?.appendChild(backupLink)
+    }
+
+    // Add global CSS to ensure JetBrains Mono is applied to code elements
+    val globalCodeStyleId = "global-jetbrains-mono"
+    if (document.getElementById(globalCodeStyleId) == null) {
+      val style = document.createElement("style").apply {
+        setAttribute("id", globalCodeStyleId)
+        textContent = """
+          @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+          
+          code, pre code, .hljs, 
+          code[class*="language-"], 
+          pre[class*="language-"] code {
+            font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+            font-feature-settings: 'liga' 0 !important;
+            font-variant-ligatures: none !important;
+          }
+        """.trimIndent()
+      }
+      document.head?.appendChild(style)
     }
   }
 
