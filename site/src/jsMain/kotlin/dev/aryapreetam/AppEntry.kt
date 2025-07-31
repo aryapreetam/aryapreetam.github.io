@@ -20,41 +20,43 @@ import kotlinx.browser.document
 fun initStyles(ctx: InitSilkContext) {
     ctx.stylesheet.registerStyleBase("html, body") { Modifier.fillMaxHeight() }
 
-    // Load JetBrains Mono font and other fonts
-    loadJetBrainsMonoFont()
+    // Optimized font loading - fonts are now preloaded in build.gradle.kts
+    // Just ensure they're applied properly to code elements
+    loadFontStyles()
 }
 
-// Load JetBrains Mono font
-private fun loadJetBrainsMonoFont() {
-    // Check if the font is already loaded
-    val existingFont = document.querySelector("link[href*='JetBrains+Mono']")
-    if (existingFont == null) {
-        // Preconnect to Google Fonts
-        val preconnect1 = document.createElement("link") as HTMLLinkElement
-        preconnect1.rel = "preconnect"
-        preconnect1.href = "https://fonts.googleapis.com"
-        document.head?.appendChild(preconnect1)
-
-        val preconnect2 = document.createElement("link") as HTMLLinkElement
-        preconnect2.rel = "preconnect"
-        preconnect2.href = "https://fonts.gstatic.com"
-        preconnect2.setAttribute("crossorigin", "")
-        document.head?.appendChild(preconnect2)
-
-        // Load JetBrains Mono font
-        val fontLink = document.createElement("link") as HTMLLinkElement
-        fontLink.rel = "stylesheet"
-        fontLink.href =
-            "https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
-        document.head?.appendChild(fontLink)
+// Optimized font loading without duplicating requests
+private fun loadFontStyles() {
+    // Only add CSS styles, don't load fonts again since they're preloaded
+    val globalCodeStyleId = "global-jetbrains-mono"
+    if (document.getElementById(globalCodeStyleId) == null) {
+        val style = document.createElement("style").apply {
+            setAttribute("id", globalCodeStyleId)
+            textContent = """
+                code, pre code, .hljs, 
+                code[class*="language-"], 
+                pre[class*="language-"] code {
+                    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+                    font-feature-settings: 'liga' 0 !important;
+                    font-variant-ligatures: none !important;
+                    font-display: swap;
+                }
+            """.trimIndent()
+        }
+        document.head?.appendChild(style)
     }
 }
 
-// Global utility function to load highlight.js theme
+// Global utility function to load highlight.js theme with integrity checks
 fun loadHighlightJsTheme(colorMode: ColorMode) {
     val themeUrl = when (colorMode) {
-        ColorMode.LIGHT -> "/highlight.js/styles/a11y-light.min.css"
-        ColorMode.DARK -> "/highlight.js/styles/a11y-dark.min.css"
+        ColorMode.LIGHT -> "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/a11y-light.min.css"
+        ColorMode.DARK -> "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/a11y-dark.min.css"
+    }
+
+    val integrity = when (colorMode) {
+        ColorMode.LIGHT -> "sha512-Vkn75cTacPzd6nqnFF0oHeIjgoAp3jNKAUDR9N7kBJSqYlWyBYRAh+MKEfxs6LJUvTQxKkxl8k2+zSKkELV2hA=="
+        ColorMode.DARK -> "sha512-1xVFABKbIQJrRx/Hx9G8PhW9j1lEbhPqjFMI8LhOHk2RfJuCYk4R5/4GvdKxOmGjBJZPJqG/EKu5J6AcLmjP7w=="
     }
 
     // Remove existing highlight themes
@@ -65,10 +67,12 @@ fun loadHighlightJsTheme(colorMode: ColorMode) {
         }
     }
 
-    // Add new theme
+    // Add new theme with integrity check
     val link = document.createElement("link") as HTMLLinkElement
     link.rel = "stylesheet"
     link.href = themeUrl
+    link.setAttribute("integrity", integrity)
+    link.setAttribute("crossorigin", "anonymous")
     link.setAttribute("data-highlight-theme", colorMode.name.lowercase())
     document.head?.appendChild(link)
 }
@@ -78,10 +82,8 @@ fun loadHighlightJsTheme(colorMode: ColorMode) {
 fun AppEntry(content: @Composable () -> Unit) {
     var colorMode by ColorMode.currentState
 
-    // Load appropriate highlight.js theme on app startup and color mode change
-    LaunchedEffect(colorMode) {
-        loadHighlightJsTheme(colorMode)
-    }
+    // Theme loading is now handled in individual CodeBlock components using Prism.js
+    // This provides better reliability and .kts file support as identified in dev logs
 
     SilkApp {
         Surface(SmoothColorStyle.toModifier().fillMaxHeight()) {

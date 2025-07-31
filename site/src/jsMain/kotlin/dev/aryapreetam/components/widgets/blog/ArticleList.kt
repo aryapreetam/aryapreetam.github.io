@@ -35,6 +35,8 @@ fun ArticleList(entries: List<ArticleEntry>) {
   if (entries.isEmpty()) {
     P(
       attrs = {
+        attr("role", "status")
+        attr("aria-live", "polite")
         style {
           color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
           property("text-align", "center")
@@ -42,30 +44,33 @@ fun ArticleList(entries: List<ArticleEntry>) {
       }
     ) {
       Text("No posts available yet.")
-        }
-    } else {
-      Div(
-        attrs = {
-          style {
-            display(DisplayStyle.Flex)
-            flexDirection(FlexDirection.Column)
-            gap(20.px)
-          }
-        }
-      ) {
-        entries.forEach { entry ->
-          ArticleSummary(entry)
-        }
-        }
     }
+  } else {
+    Section(
+      attrs = {
+        attr("aria-label", "Blog posts")
+        style {
+          display(DisplayStyle.Flex)
+          flexDirection(FlexDirection.Column)
+          gap(20.px)
+        }
+      }
+    ) {
+      entries.forEachIndexed { index, entry ->
+        ArticleSummary(entry, index)
+      }
+    }
+  }
 }
 
 @Composable
-private fun ArticleSummary(entry: ArticleEntry) {
+private fun ArticleSummary(entry: ArticleEntry, index: Int) {
   var colorMode by ColorMode.currentState
 
   Article(
     attrs = {
+      attr("aria-labelledby", "article-title-$index")
+      attr("aria-describedby", "article-desc-$index")
       style {
         padding(16.px)
         border(
@@ -80,47 +85,58 @@ private fun ArticleSummary(entry: ArticleEntry) {
     }
   ) {
     // Article title as link
-    H3(
-      attrs = {
-        style {
-          marginBottom(12.px)
-          margin(0.px, 0.px, 12.px, 0.px)
+    Header {
+      H3(
+        attrs = {
+          id("article-title-$index")
+          style {
+            marginBottom(12.px)
+            margin(0.px, 0.px, 12.px, 0.px)
+          }
         }
-      }
-    ) {
-      Link(
-        path = entry.path,
-        modifier = Modifier
-          .textDecorationLine(TextDecorationLine.None)
-          .color(if (colorMode.isLight) Color("#1a202c") else Color("#f7fafc"))
-          .fontSize(20.px)
-          .fontWeight(FontWeight.SemiBold)
       ) {
-        Text(entry.title)
-      }
-    }
-
-    // Date and author
-    Div(
-      attrs = {
-        style {
-          color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
-          fontSize(14.px)
-          marginBottom(16.px)
-          display(DisplayStyle.Flex)
-          alignItems(AlignItems.Center)
-          gap(8.px)
+        Link(
+          path = entry.path,
+          modifier = Modifier
+            .textDecorationLine(TextDecorationLine.None)
+            .color(if (colorMode.isLight) Color("#1a202c") else Color("#f7fafc"))
+            .fontSize(20.px)
+            .fontWeight(FontWeight.SemiBold)
+        ) {
+          Text(entry.title)
         }
       }
-    ) {
-      Span { Text(formatDate(entry.date)) }
-      Span { Text("•") }
-      Span { Text(entry.author) }
+
+      // Date and author metadata
+      Div(
+        attrs = {
+          style {
+            color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
+            fontSize(14.px)
+            marginBottom(16.px)
+            display(DisplayStyle.Flex)
+            alignItems(AlignItems.Center)
+            gap(8.px)
+          }
+        }
+      ) {
+        Span(
+          attrs = {
+            attr("data-datetime", entry.date)
+            attr("title", "Published on ${formatDate(entry.date)}")
+          }
+        ) {
+          Text(formatDate(entry.date))
+        }
+        Span { Text("•") }
+        Span { Text("By ${entry.author}") }
+      }
     }
 
     // Description
     P(
       attrs = {
+        id("article-desc-$index")
         style {
           lineHeight("1.6")
           color(if (colorMode.isLight) Color("#4a5568") else Color("#cbd5e0"))
@@ -136,6 +152,8 @@ private fun ArticleSummary(entry: ArticleEntry) {
     if (entry.tags.isNotEmpty()) {
       Div(
         attrs = {
+          attr("role", "list")
+          attr("aria-label", "Article tags")
           style {
             display(DisplayStyle.Flex)
             flexWrap(FlexWrap.Wrap)
@@ -146,6 +164,7 @@ private fun ArticleSummary(entry: ArticleEntry) {
         entry.tags.forEach { tag ->
           Span(
             attrs = {
+              attr("role", "listitem")
               style {
                 fontSize(12.px)
                 padding(4.px, 8.px)

@@ -1,6 +1,8 @@
 package dev.aryapreetam.components.layouts
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.css.Overflow
+import com.varabyte.kobweb.compose.css.zIndex
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -22,56 +24,6 @@ import org.jetbrains.compose.web.dom.*
 @Composable
 fun PageLayout(content: @Composable () -> Unit) {
   var colorMode by ColorMode.currentState
-
-  // Load JetBrains Mono font if not already loaded
-  LaunchedEffect(Unit) {
-    // Load JetBrains Mono font with preload for performance
-    if (document.querySelector("link[href*='JetBrains+Mono']") == null) {
-      val preloadLink = document.createElement("link").apply {
-        setAttribute("rel", "preload")
-        setAttribute("as", "font")
-        setAttribute("type", "font/woff2")
-        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
-        setAttribute("crossorigin", "")
-      }
-      document.head?.appendChild(preloadLink)
-
-      val linkElement = document.createElement("link").apply {
-        setAttribute("rel", "stylesheet")
-        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
-      }
-      document.head?.appendChild(linkElement)
-    }
-
-    // Also load from CDN as backup
-    if (document.querySelector("link[href*='jetbrains-mono']") == null) {
-      val backupLink = document.createElement("link").apply {
-        setAttribute("rel", "stylesheet")
-        setAttribute("href", "https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/jetbrains-mono.min.css")
-      }
-      document.head?.appendChild(backupLink)
-    }
-
-    // Add global CSS to ensure JetBrains Mono is applied to code elements
-    val globalCodeStyleId = "global-jetbrains-mono"
-    if (document.getElementById(globalCodeStyleId) == null) {
-      val style = document.createElement("style").apply {
-        setAttribute("id", globalCodeStyleId)
-        textContent = """
-          @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
-          
-          code, pre code, .hljs, 
-          code[class*="language-"], 
-          pre[class*="language-"] code {
-            font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
-            font-feature-settings: 'liga' 0 !important;
-            font-variant-ligatures: none !important;
-          }
-        """.trimIndent()
-      }
-      document.head?.appendChild(style)
-    }
-  }
 
   // Load theme from localStorage on first render
   LaunchedEffect(Unit) {
@@ -100,9 +52,10 @@ fun PageLayout(content: @Composable () -> Unit) {
     }
   }
 
-  // Full height flexbox container
+  // Full height flexbox container with semantic HTML
   Div(
         attrs = {
+          attr("role", "document")
           style {
             minHeight(100.vh)
             display(DisplayStyle.Flex)
@@ -122,63 +75,122 @@ fun PageLayout(content: @Composable () -> Unit) {
           }
         }
     ) {
-      // Theme toggle positioned absolutely in top right
+    // Skip to main content link for accessibility
+    A(
+      href = "#main-content",
+      attrs = {
+        attr("class", "skip-link")
+        style {
+          position(Position.Absolute)
+          top((-40).px)
+          left(8.px)
+          zIndex(9999)
+          padding(8.px, 12.px)
+          backgroundColor(if (colorMode.isLight) Color("#2d3748") else Color("#f7fafc"))
+          color(if (colorMode.isLight) Color.white else Color("#2d3748"))
+          textDecoration("none")
+          borderRadius(4.px)
+          fontSize(14.px)
+          fontWeight(600)
+        }
+        onFocus { event ->
+          (event.target as? org.w3c.dom.HTMLElement)?.style?.top = "8px"
+        }
+        onBlur { event ->
+          (event.target as? org.w3c.dom.HTMLElement)?.style?.top = "-40px"
+        }
+        }
+      ) {
+        Text("Skip to main content")
+      }
+
+    // Header with theme toggle
+    Header(
+      attrs = {
+        style {
+          display(DisplayStyle.Flex)
+          justifyContent(JustifyContent.FlexEnd)
+          padding(16.px)
+          position(Position.Relative)
+          zIndex(100)
+        }
+      }
+    ) {
       Button(
         onClick = {
           val newMode = colorMode.opposite
           colorMode = newMode
           // Save theme to localStorage
           localStorage.setItem("kobweb-color-mode", if (newMode.isDark) "dark" else "light")
-            },
-            modifier = Modifier
-              .position(Position.Fixed)
-              .top(16.px)
-              .right(16.px)
-              .borderRadius(50.percent)
-              .padding(8.px)
-              .backgroundColor(if (colorMode.isLight) Color("#f7fafc") else Color("#4a5568"))
-              .border(0.px, LineStyle.None, Color.transparent)
-              .zIndex(1000)
-        ) {
-          if (colorMode.isLight) FaMoon() else FaSun()
-        }
-
-      // Main content area - grows to fill available space
-      Main(
-            attrs = {
-              style {
-                flexGrow(1)
-                maxWidth(1024.px)
-                property("margin", "0 auto")
-                padding(32.px, 20.px, 40.px, 20.px)
-                width(100.percent)
-              }
+        },
+        modifier = Modifier
+          .borderRadius(50.percent)
+          .padding(8.px)
+          .backgroundColor(if (colorMode.isLight) Color("#f7fafc") else Color("#4a5568"))
+          .border(0.px, LineStyle.None, Color.transparent)
+      ) {
+        if (colorMode.isLight) FaMoon() else FaSun()
+        // Add visually hidden text for screen readers
+        Span(
+          attrs = {
+            style {
+              position(Position.Absolute)
+              width(1.px)
+              height(1.px)
+              padding(0.px)
+              property("margin", "-1px")
+              property("overflow", "hidden")
+              property("clip", "rect(0, 0, 0, 0)")
+              property("white-space", "nowrap")
+              property("border", "0")
             }
+          }
         ) {
-            content()
+          Text(if (colorMode.isLight) "Switch to dark mode" else "Switch to light mode")
         }
+      }
+    }
 
-      // Footer - always at bottom
+    // Main content area - grows to fill available space with semantic HTML
+    Main(
+      attrs = {
+        id("main-content")
+        attr("role", "main")
+        style {
+          flexGrow(1)
+          maxWidth(1024.px)
+          property("margin", "0 auto")
+          padding(0.px, 20.px, 40.px, 20.px)
+          width(100.percent)
+        }
+      }
+    ) {
+      content()
+    }
+
+    // Footer - always at bottom with semantic HTML
       Footer(
-            attrs = {
-              style {
-                property("text-align", "center")
-                paddingTop(16.px)
-                paddingLeft(16.px)
-                paddingRight(16.px)
-                paddingBottom(8.px)
-                fontSize(14.px)
-                color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
-                flexShrink(0)
-              }
-            }
-        ) {
+        attrs = {
+          attr("role", "contentinfo")
+          style {
+            property("text-align", "center")
+            paddingTop(16.px)
+            paddingLeft(16.px)
+            paddingRight(16.px)
+            paddingBottom(8.px)
+            fontSize(14.px)
+            color(if (colorMode.isLight) Color("#718096") else Color("#a0aec0"))
+            flexShrink(0)
+          }
+        }
+      ) {
         Text("Built with ")
         A(
           href = "https://kobweb.varabyte.com",
           attrs = {
             attr("target", "_blank")
             attr("rel", "noopener noreferrer")
+            attr("aria-label", "Learn more about Kobweb framework")
             style {
               color(if (colorMode.isLight) Color("#3182ce") else Color("#63b3ed"))
               textDecoration("none")
@@ -187,6 +199,6 @@ fun PageLayout(content: @Composable () -> Unit) {
         ) {
           Text("Kobweb")
         }
-        }
+      }
     }
 }

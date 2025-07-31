@@ -2,6 +2,7 @@ package dev.aryapreetam.components.layouts
 
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.Overflow
+import com.varabyte.kobweb.compose.css.StyleVariable
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
@@ -14,16 +15,45 @@ import kotlinx.browser.window
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 
-// JavaScript interop for highlight.js
-external object hljs {
-  fun highlightAll()
-  fun configure(options: dynamic)
+/**
+ * Layout specifically for markdown pages
+ * This builds on top of PageLayout to provide styling optimized for markdown content
+ */
+@Layout
+@Composable
+fun MarkdownLayout(content: @Composable () -> Unit) {
+  var colorMode by ColorMode.currentState
+
+  PageLayout {
+    // Apply line height styling to the content without wrapping in Box
+    // This prevents interference with PageLayout's centering and max-width
+    Div(attrs = {
+      style {
+        lineHeight("1.6")
+      }
+    }) {
+      content()
+    }
+  }
 }
 
-@InitSilk
-fun initHighlightJs(ctx: InitSilkContext) {
-  // Tweaks to make output from highlight.js look softer / better
-  ctx.stylesheet.registerStyleBase("code.hljs") { Modifier.borderRadius(8.px) }
+/**
+ * Alternative simplified markdown layout without the container box
+ */
+@Layout
+@Composable
+fun SimpleMarkdownLayout(content: @Composable () -> Unit) {
+  PageLayout {
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .maxWidth(1024.px)
+        .margin(0.px)
+        .alignSelf(AlignSelf.Center)
+    ) {
+      content()
+    }
+  }
 }
 
 @InitSilk
@@ -56,6 +86,13 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
 
   ctx.stylesheet.registerStyleBase("li") {
     Modifier.margin(0.px, 0.px, 4.px, 0.px)
+  }
+
+  // Enable lazy loading for images
+  ctx.stylesheet.registerStyleBase("img") {
+    Modifier
+      .maxWidth(100.percent)
+      .height(100.percent) // Auto height will be maintained by aspect ratio
   }
 
   // Style horizontal rules to be clean without extra padding
@@ -98,61 +135,5 @@ fun initMarkdownStyles(ctx: InitSilkContext) {
         "'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace"
       )
       .fontSize(14.px)
-  }
-}
-
-/**
- * Layout specifically for markdown pages
- * This builds on top of PageLayout to provide styling optimized for markdown content
- */
-@Layout
-@Composable
-fun MarkdownLayout(content: @Composable () -> Unit) {
-  var colorMode by ColorMode.currentState
-
-  // Apply syntax highlighting after content renders
-  LaunchedEffect(content, colorMode) {
-    // Small delay to ensure DOM is fully rendered
-    window.setTimeout({
-      try {
-        if (js("typeof hljs !== 'undefined'") as Boolean) {
-          hljs.configure(js("{ ignoreUnescapedHTML: true }"))
-          hljs.highlightAll()
-        }
-      } catch (e: Exception) {
-        console.log("Highlight.js error:", e)
-      }
-    }, 100)
-    }
-
-  PageLayout {
-    // Apply line height styling to the content without wrapping in Box
-    // This prevents interference with PageLayout's centering and max-width
-    Div(attrs = {
-      style {
-        lineHeight("1.6")
-      }
-    }) {
-      content()
-    }
-  }
-}
-
-/**
- * Alternative simplified markdown layout without the container box
- */
-@Layout
-@Composable
-fun SimpleMarkdownLayout(content: @Composable () -> Unit) {
-  PageLayout {
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .maxWidth(1024.px)
-        .margin(0.px)
-        .alignSelf(AlignSelf.Center)
-    ) {
-      content()
-    }
   }
 }

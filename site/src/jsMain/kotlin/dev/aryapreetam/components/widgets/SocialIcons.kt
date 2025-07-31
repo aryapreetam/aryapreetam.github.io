@@ -24,6 +24,8 @@ fun SocialIcons() {
         A(
             href = "mailto:preetb123@gmail.com",
             attrs = {
+                attr("aria-label", "Send email to Preetam")
+                attr("title", "Send email to Preetam")
                 style {
                     display(DisplayStyle.InlineBlock)
                     width(24.px)
@@ -45,6 +47,8 @@ fun SocialIcons() {
                     attr("height", "24")
                     attr("viewBox", "0 0 24 24")
                     attr("fill", "currentColor")
+                    attr("aria-hidden", "true")
+                    attr("focusable", "false")
                 }
             ) {
                 Path {
@@ -59,6 +63,8 @@ fun SocialIcons() {
             attrs = {
                 attr("target", "_blank")
                 attr("rel", "noopener noreferrer")
+                attr("aria-label", "Visit Preetam's LinkedIn profile")
+                attr("title", "Visit Preetam's LinkedIn profile")
                 style {
                     display(DisplayStyle.InlineBlock)
                     width(24.px)
@@ -80,6 +86,8 @@ fun SocialIcons() {
                     attr("height", "24")
                     attr("viewBox", "0 0 24 24")
                     attr("fill", "currentColor")
+                    attr("aria-hidden", "true")
+                    attr("focusable", "false")
                 }
             ) {
                 Path {
@@ -94,6 +102,8 @@ fun SocialIcons() {
             attrs = {
                 attr("target", "_blank")
                 attr("rel", "noopener noreferrer")
+                attr("aria-label", "Follow Preetam on X (Twitter)")
+                attr("title", "Follow Preetam on X (Twitter)")
                 style {
                     display(DisplayStyle.InlineBlock)
                     width(24.px)
@@ -115,6 +125,8 @@ fun SocialIcons() {
                     attr("height", "24")
                     attr("viewBox", "0 0 24 24")
                     attr("fill", "currentColor")
+                    attr("aria-hidden", "true")
+                    attr("focusable", "false")
                 }
             ) {
                 Path {
@@ -129,6 +141,8 @@ fun SocialIcons() {
             attrs = {
                 attr("target", "_blank")
                 attr("rel", "noopener noreferrer")
+                attr("aria-label", "View Preetam's GitHub projects")
+                attr("title", "View Preetam's GitHub projects")
                 style {
                     display(DisplayStyle.InlineBlock)
                     width(24.px)
@@ -150,6 +164,8 @@ fun SocialIcons() {
                     attr("height", "24")
                     attr("viewBox", "0 0 24 24")
                     attr("fill", "currentColor")
+                    attr("aria-hidden", "true")
+                    attr("focusable", "false")
                 }
             ) {
                 Path {

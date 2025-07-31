@@ -35,47 +35,17 @@ fun CodeBlock(
   var copyButtonText by remember { mutableStateOf("Copy") }
   var isButtonHovered by remember { mutableStateOf(false) }
 
-  // Load JetBrains Mono font
-  LaunchedEffect(Unit) {
-    // Load JetBrains Mono font with higher priority
-    if (document.querySelector("link[href*='JetBrains+Mono']") == null) {
-      val fontLink = document.createElement("link").apply {
-        setAttribute("rel", "preload")
-        setAttribute("as", "font")
-        setAttribute("type", "font/woff2")
-        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
-        setAttribute("crossorigin", "")
-      }
-      document.head?.appendChild(fontLink)
-
-      // Also add as stylesheet
-      val styleLink = document.createElement("link").apply {
-        setAttribute("rel", "stylesheet")
-        setAttribute("href", "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap")
-      }
-      document.head?.appendChild(styleLink)
-    }
-
-    // Add custom CSS for fonts
-    val customStyleId = "code-block-fonts"
-    if (document.getElementById(customStyleId) == null) {
-      val style = document.createElement("style").apply {
-        setAttribute("id", customStyleId)
-        textContent = """
-          /* Code content - JetBrains Mono */
-          pre code, code, .token {
-            font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
-            font-feature-settings: 'liga' 0;
-          }
-          
-          /* UI elements - System font */
-          .code-block-ui {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
-          }
-        """.trimIndent()
-      }
-      document.head?.appendChild(style)
-    }
+  // Map language aliases for Prism.js
+  val prismLang = when (lang?.lowercase()) {
+    "kt", "kts", "kotlin" -> "kotlin"
+    "gradle", "gradle.kts", "build.gradle.kts" -> "kotlin"
+    "js" -> "javascript"
+    "py" -> "python"
+    "yml" -> "yaml"
+    "sh" -> "bash"
+    "md" -> "markdown"
+    "html" -> "xml"
+    else -> lang
   }
 
   // Load Prism.js theme based on color mode
@@ -101,18 +71,31 @@ fun CodeBlock(
   }
 
   // Apply syntax highlighting when the component mounts or updates
-  LaunchedEffect(text, lang) {
+  LaunchedEffect(text, lang, colorMode) {
     window.setTimeout({
       codeRef.value?.let { element ->
         try {
           if (js("typeof Prism !== 'undefined'") as Boolean) {
+            // Configure autoloader for language loading
+            val autoloader = js("Prism.plugins.autoloader")
+            if (autoloader != null) {
+              // Set the path for language definitions
+              js("Prism.plugins.autoloader.languages_path = 'https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/'")
+            }
+
+            // Ensure the element has the correct class before highlighting
+            val classes = element.className
+            if (!classes.contains("language-") && prismLang != null) {
+              element.className = "$classes language-$prismLang"
+            }
+
             Prism.highlightElement(element)
           }
         } catch (e: Exception) {
           console.log("Prism.js error:", e)
         }
       }
-    }, 100)
+    }, 100) // Delay to ensure Prism.js is fully loaded
   }
 
   fun copyToClipboard() {
@@ -126,17 +109,6 @@ fun CodeBlock(
     } catch (e: Exception) {
       console.log("Failed to copy:", e)
     }
-  }
-
-  // Map language aliases for Prism.js
-  val prismLang = when (lang?.lowercase()) {
-    "kt", "kts", "kotlin" -> "kotlin"
-    "gradle", "gradle.kts", "build.gradle.kts" -> "kotlin"
-    "js" -> "javascript"
-    "py" -> "python"
-    "yml" -> "yaml"
-    "sh" -> "bash"
-    else -> lang
   }
 
   // Container wrapper to handle filename positioning
@@ -155,7 +127,6 @@ fun CodeBlock(
     filename?.let {
       Div(
         attrs = {
-          classes("code-block-ui")
           style {
             property("position", "absolute")
             property("top", "-15px") // Position relative to wrapper, not main container
@@ -166,6 +137,15 @@ fun CodeBlock(
             padding(4.px, 12.px)
             fontSize(11.px)
             fontWeight(500)
+            fontFamily(
+              "system-ui",
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "Segoe UI",
+              "Helvetica",
+              "Arial",
+              "sans-serif"
+            )
             // Add border similar to main container
             border(1.px, LineStyle.Solid, if (colorMode.isLight) rgba(229, 231, 235, 1) else rgba(75, 85, 99, 1))
             borderRadius(4.px) // Small radius for clean look
@@ -195,7 +175,6 @@ fun CodeBlock(
       // Copy button (positioned in top-right corner)
       Button(
         attrs = {
-          classes("code-block-ui")
           style {
             property("position", "absolute")
             property("top", "8px")
@@ -212,6 +191,15 @@ fun CodeBlock(
             padding(4.px, 8.px)
             borderRadius(4.px)
             fontSize(11.px)
+            fontFamily(
+              "system-ui",
+              "-apple-system",
+              "BlinkMacSystemFont",
+              "Segoe UI",
+              "Helvetica",
+              "Arial",
+              "sans-serif"
+            )
             opacity(if (isHovered) 1 else 0)
             property("transition", "opacity 0.2s, background-color 0.2s")
             display(DisplayStyle.Flex)
@@ -223,8 +211,16 @@ fun CodeBlock(
           onMouseLeave { isButtonHovered = false }
         }
       ) {
-        I(attrs = { classes("fa", "fa-copy") })
-        Text(copyButtonText)
+        FaCopy()
+        Span(
+          attrs = {
+            style {
+              marginLeft(4.px)
+            }
+          }
+        ) {
+          Text(copyButtonText)
+        }
       }
 
       // Code content
@@ -237,15 +233,20 @@ fun CodeBlock(
             property("overflow", "auto")
             fontSize(14.px)
             property("line-height", "1.5")
-            fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important")
+            fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace")
           }
         }
       ) {
         Code(
           attrs = {
-            classes(prismLang?.let { "language-$it" } ?: "nohighlight")
+            // Use Prism.js class naming convention
+            if (prismLang != null) {
+              classes("language-$prismLang")
+            } else {
+              classes("nohighlight")
+            }
             style {
-              fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important")
+              fontFamily("'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace")
               fontSize(14.px)
               property("line-height", "1.5")
               whiteSpace("pre")
@@ -253,6 +254,7 @@ fun CodeBlock(
               backgroundColor(Color.transparent)
               color(Color("inherit"))
               fontWeight(400)
+              borderRadius(8.px)
             }
             ref { element ->
               codeRef.value = element
