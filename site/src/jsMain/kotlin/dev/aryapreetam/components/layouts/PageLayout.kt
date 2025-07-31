@@ -109,7 +109,7 @@ fun PageLayout(content: @Composable () -> Unit) {
             attrs = {
               style {
                 flexGrow(1)
-                maxWidth(800.px)
+                maxWidth(1024.px)
                 property("margin", "0 auto")
                 padding(32.px, 20.px, 40.px, 20.px)
                 width(100.percent)
