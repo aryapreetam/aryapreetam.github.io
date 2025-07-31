@@ -1,0 +1,13 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Arya Preetam",
+  "url": "https://aryapreetam.github.io",
+  "jobTitle": "Software Engineer",
+  "description": "Software Engineer focused on cross-platform app development using Compose/Kotlin Multiplatform",
+  "sameAs": [
+    "https://www.linkedin.com/in/preetambhosle",
+    "https://github.com/aryapreetam",
+    "https://x.com/preetambhosle"
+  ]
+}
